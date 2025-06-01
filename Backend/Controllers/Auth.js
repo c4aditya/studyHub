@@ -4,7 +4,8 @@ const OTP = require("../Models/Otp");
 const generateOTP = require("otp-generator")
 const User = require("../Models/user")
 // const Profile = require("../Models/profile")
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
+const JWT = require("jsonwebtoken")
 
 
 // send otp function 
@@ -176,11 +177,81 @@ async function signUp(req, res) {
 }
 
 
+//--------------------------------------------------------------signup ends -----------------------------------------------------------------------------------------------------
 
-// login
+//--------------------------------------------------------------login starts-----------------------------------------------------------------------------------------------------
 
+async function login(req,res){
+
+    try{
+      const {email ,password} = req.body;
+      //validation 
+      if(!email || !password){
+        return res.status(500).json({
+            sucess:false,
+            message:"The Email and Paaword must be field"
+        })
+      }
+
+      //check the email is signup or not 
+      const isExistingUser = await User.findOne({email})
+      if(!isExistingUser){
+        return res.status(500).json({
+            sucess:false,
+            message:"Your are Not signup make sure you are sign In first"
+        })}
+
+        //password matching with hashpassword   
+        const isPasswordMatch = await bcrypt.compare(password ,isExistingUser.password);
+        if(!isPasswordMatch){
+            return res.status(500).json({
+                sucess:false,
+                message:"Password is not matched please try again"
+            })
+        }
+
+        //creating JWT tokens 
+        try{
+            const payload =
+            {
+                id:isExistingUser._id,
+                role:isExistingUser.role,
+                email:isExistingUser.email,
+            }
+
+            const secrteKey ="Aditya";
+            const token = JWT.sign(payload,secrteKey,{
+                expiresIn:"2h"
+            } )
+
+            // creating a cookies
+            const option={
+                expiresIn : Date.now() + 9 * 24 *60 *60 *1000,
+                httpOnly:true
+            }
+
+            res.cookie("token",token ,option).status(200).json({
+                sucess:true,
+                message:"Cookie is creatd Login sucessfully",
+            
+            })
+
+          console.log(isExistingUser)
+        }catch(error){
+            console.log("error while creating a cookie" , error)
+        }
+        
+     
+      
+    }catch(error){
+
+        console.log("Error while login ", error)
+
+    }
+
+}
 
 
 // change password 
 
-module.exports = { sendOtp, signUp };
+module.exports = { sendOtp, signUp ,login};

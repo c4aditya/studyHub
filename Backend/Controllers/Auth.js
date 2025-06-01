@@ -3,11 +3,12 @@
 const OTP = require("../Models/Otp");
 const generateOTP = require("otp-generator")
 const User = require("../Models/user")
+// const Profile = require("../Models/profile")
 const bcrypt = require("bcrypt")
 
 
 // send otp function 
-
+    
 async function sendOtp(req ,res){
     var otp;
     try{
@@ -71,12 +72,7 @@ async function sendOtp(req ,res){
        })
 
     //    send the email 
-
- 
-
-
-        }
-        
+        }     
 
         else{
             return res.status(500).json({
@@ -181,6 +177,22 @@ async function signUp(req ,res){
         
        // make enty in the data base 
 
+       // create an enty for ref's
+
+    //    const profileDetails = await Profile.create({
+
+    //     gender:null,
+    //     contactNumber:null,
+    //      address:null,
+    //      about:null,
+        
+    //    })
+
+       // Course ref
+
+
+    
+
       const userData = await User.create({
 
               firstName,
@@ -189,8 +201,10 @@ async function signUp(req ,res){
               password : hassingPassword,
               confrimPassword,
               otp,
+            //   additionalDetails:profileDetails._id,
               acconutType,
-              phoneNumber
+              phoneNumber,
+              image:`https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`
 
        })   
 

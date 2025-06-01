@@ -45,7 +45,7 @@ const user_schema = new mongoose.Schema({
 // it is basically reffer the profile of the  user , instructor , and adimin
     additionalDetails:{
        type:mongoose.Schema.Types.ObjectId,
-       
+    //    required:true,
        ref:"Profile",
     },
 
@@ -58,6 +58,7 @@ const user_schema = new mongoose.Schema({
 
     image:{
         type:String,
+        
     
     },
 

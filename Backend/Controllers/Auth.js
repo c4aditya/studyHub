@@ -97,8 +97,8 @@ async function signUp(req, res) {
         }
 
         // check is it existing user 
-        const isExistingUser = await User.findOne({ email });
-        if (isExistingUser) {
+        const user = await User.findOne({ email });
+        if (user) {
             return res.status(500).json({
                 sucess: false,
                 message: "This user is already exist Please login !"
@@ -194,15 +194,15 @@ async function login(req,res){
       }
 
       //check the email is signup or not 
-      const isExistingUser = await User.findOne({email})
-      if(!isExistingUser){
+      const user = await User.findOne({email})
+      if(!user){
         return res.status(500).json({
             sucess:false,
             message:"Your are Not signup make sure you are sign In first"
         })}
 
         //password matching with hashpassword   
-        const isPasswordMatch = await bcrypt.compare(password ,isExistingUser.password);
+        const isPasswordMatch = await bcrypt.compare(password ,user.password);
         if(!isPasswordMatch){
             return res.status(500).json({
                 sucess:false,
@@ -214,9 +214,9 @@ async function login(req,res){
         try{
             const payload =
             {
-                id:isExistingUser._id,
-                role:isExistingUser.role,
-                email:isExistingUser.email,
+                id:user._id,
+                role:user.role,
+                acconutType:user.acconutType
             }
 
             const secrteKey ="Aditya";
@@ -229,14 +229,25 @@ async function login(req,res){
                 expiresIn : Date.now() + 9 * 24 *60 *60 *1000,
                 httpOnly:true
             }
+          user.token = token
+           user.password =null,
+            
 
             res.cookie("token",token ,option).status(200).json({
                 sucess:true,
                 message:"Cookie is creatd Login sucessfully",
+                
+                user:{
+                    id:user._id,
+                    email:user.email,
+                    role:user.role,
+                    token:token,
+                }
+                
             
             })
 
-          console.log(isExistingUser)
+          console.log(user)
         }catch(error){
             console.log("error while creating a cookie" , error)
         }
@@ -251,7 +262,45 @@ async function login(req,res){
 
 }
 
+//-------------------------------------------------------------Login code ends-------------------------------------------------
+//--------------------------------------------------------------reset code starts----------------------------------------------
 
-// change password 
+async function changePassword(req,res){
+    try{
+
+        const {email ,password}= req.body;
+
+        //chek the email is present or not 
+
+        if(!email || !password){
+            return res.status(500).json({
+                sucess:false,
+                message:"please enter email and password"
+            })
+        }
+ 
+        // check email is signuped or not 
+        const isExistingUser = await User.findOne({email})
+        if(!isExistingUser){
+            return res.status(500).json({
+                sucess:false,
+                message:"This is email is not registered make sure it is registured first"
+            })
+        }
+
+        try{
+       sendOtp();
+       login()
+
+
+        }catch(error){
+            console.log(error)
+        }
+
+    }catch(error){
+        console.log("Geeting error while reset the password ");
+        
+    }
+}
 
 module.exports = { sendOtp, signUp ,login};
